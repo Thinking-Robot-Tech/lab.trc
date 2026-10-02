@@ -1,0 +1,8 @@
+.next
+node_modules
+.venv
+.tools
+test-results
+package-lock.json
+public/blockly
+public/assets/firmware/MICROPYTHON-LICENSE.txt
