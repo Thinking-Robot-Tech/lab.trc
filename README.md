@@ -45,9 +45,9 @@ Use a **classic dual-core ESP32 DevKit / ESP32-WROOM with at least 4 MiB flash**
 
 1. Open Labs in desktop Chrome/Edge on localhost or HTTPS.
 2. Select ESP32, Connect board, choose a USB port, then Connect & check board.
-3. If MicroPython is present, no firmware is reinstalled. If it is not detected, try RESET/reconnect or use the guided installer. Installing firmware erases the board and requires acknowledgement.
-4. The installer uses the bundled file automatically, or accepts the **full** official ESP32_GENERIC `.bin` (not `.app-bin`). It validates the merged-image layout, detects the physical chip before erase, writes at `0x1000`, and verifies the flashed bytes with MD5.
-5. Reconnect after installation. Run executes in memory. Upload saves `main.py` and soft-resets the board. Stop interrupts a running program.
+3. If MicroPython is present, no firmware is reinstalled. Labs retries the raw Python console handshake while the board boots. A missing reply does not prove firmware is missing: release BOOT and try RESET/reconnect before using the guided installer. Installing firmware erases the board and requires acknowledgement.
+4. The installer uses the included firmware directly, with no file picker. It verifies the download with SHA-256, validates the merged-image layout, detects the physical chip before erase, writes at `0x1000`, and verifies the flashed bytes with MD5.
+5. After installation, Labs explicitly pulses reset into normal boot, reconnects and confirms MicroPython automatically. If the console cannot be reached, it offers reconnecting without another firmware installation. Run executes in memory. Upload saves `main.py` and soft-resets the board. Stop interrupts a running program.
 
 Firmware path: `public/assets/firmware/esp32-micropython.bin`. Source and SHA-256: [firmware README](public/assets/firmware/README.md). Official instructions: https://micropython.org/download/ESP32_GENERIC/
 

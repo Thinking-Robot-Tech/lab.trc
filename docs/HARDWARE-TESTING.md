@@ -1,13 +1,13 @@
 # Hardware acceptance checks for Labs v1
 
-Software checks cannot replace a real USB board test. No serial boards were attached to the development machine.
+Software checks cannot replace a real USB board test. The connection fix was checked on the attached CP210x board at COM3: its raw Python console reported ESP32 / MicroPython v1.29.0. This check did not erase or reflash it; full installation/upload acceptance checks remain below.
 
 ## Classic ESP32 DevKit / WROOM (4 MiB or more)
 
 1. Open the HTTPS site in desktop Chrome or Edge. Choose ESP32 and connect a USB data cable.
 2. Choose a new USB port, select the ESP32 in the browser chooser, and connect.
 3. With MicroPython already installed, confirm the status becomes “Connected & ready” without flashing.
-4. With an Arduino or factory image installed, confirm the firmware setup appears. Acknowledge the erase warning, install the bundled firmware, and reconnect. Hold BOOT if synchronization waits.
+4. With an Arduino or factory image installed, confirm the firmware setup appears without a file picker. Acknowledge the erase warning and install the included firmware. Release BOOT when writing starts. The board must restart and become “Connected & ready” automatically after verification. If the console remains unreachable, Labs must offer reconnecting rather than asking to install again.
 5. Load Make it blink. Run should blink GPIO 2; Stop should interrupt it. If no built-in LED exists, use an LED and resistor on GPIO 2.
 6. Upload the blink program, unplug, and reconnect power. It should start again from `main.py`.
 7. Load Hello, robot! and upload. Confirm the serial monitor prints the greeting.

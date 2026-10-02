@@ -1,4 +1,14 @@
 export const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+class SerialTimeout extends Error {}
+
+// GPIO0 must be released before pulsing EN, otherwise the board boots into its ROM flasher.
+export async function resetEsp32(port: SerialPort) {
+  await port.setSignals({ dataTerminalReady: false, requestToSend: false });
+  await delay(50);
+  await port.setSignals({ dataTerminalReady: false, requestToSend: true });
+  await delay(150);
+  await port.setSignals({ dataTerminalReady: false, requestToSend: false });
+}
 export class BoardSerial {
   private reader?: ReadableStreamDefaultReader<Uint8Array>;
   private reading?: Promise<void>;
@@ -16,6 +26,7 @@ export class BoardSerial {
     this.closing = false;
     this.reader = this.port.readable!.getReader();
     this.reading = this.read();
+    await this.port.setSignals({ dataTerminalReady: false, requestToSend: false });
   }
   private async read() {
     const decoder = new TextDecoder();
@@ -49,7 +60,7 @@ export class BoardSerial {
     while (!match(this.buffer)) {
       if (!this.reader) throw new Error('Board disconnected. Connect it again.');
       if (Date.now() - start > timeout)
-        throw new Error(
+        throw new SerialTimeout(
           'The board did not reply. Close other serial apps, check your USB cable, then reconnect.',
         );
       await delay(30);
@@ -57,18 +68,18 @@ export class BoardSerial {
     return this.buffer;
   }
   async probe() {
-    this.buffer = '';
-    await this.write('\x03\x03\x02');
-    await delay(200);
-    this.buffer = '';
-    await this.write(
-      "\r\nimport sys; print('LAB_' + 'READY', sys.platform, sys.implementation.name)\r\n",
-    );
     try {
-      await this.expect((t) => t.includes('LAB_READY esp32 micropython'), 2500);
-      return true;
-    } catch {
+      await this.raw(
+        "import sys\nprint('LAB_' + 'READY', sys.platform, sys.implementation.name)\n",
+      );
+      const response = await this.expect((t) => t.includes('\x04>'));
+      return /LAB_READY\s+esp32\s+micropython/.test(response);
+    } catch (error) {
+      if (!(error instanceof SerialTimeout)) throw error;
+      this.log('\nThe Python console did not answer. This does not mean firmware is missing.\n');
       return false;
+    } finally {
+      if (this.reader) await this.write('\x02');
     }
   }
   async stop() {
@@ -76,11 +87,29 @@ export class BoardSerial {
     await delay(100);
     await this.write('\x02');
   }
+  private async enterRaw() {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt === 2) {
+        this.log('\nRestarting ESP32 into normal boot and retrying the Python console…\n');
+        await resetEsp32(this.port);
+        await delay(800);
+      }
+      await this.stop();
+      this.buffer = '';
+      await this.write('\r\x01');
+      try {
+        await this.expect(
+          (t) => t.includes('raw REPL; CTRL-B to exit') && t.trimEnd().endsWith('>'),
+          1800,
+        );
+        return;
+      } catch (error) {
+        if (!(error instanceof SerialTimeout) || attempt === 2) throw error;
+      }
+    }
+  }
   private async raw(source: string) {
-    await this.stop();
-    this.buffer = '';
-    await this.write('\x01');
-    await this.expect((t) => t.includes('raw REPL; CTRL-B to exit') && t.endsWith('>'));
+    await this.enterRaw();
     this.buffer = '';
     const bytes = new TextEncoder().encode(source);
     for (let i = 0; i < bytes.length; i += 128) {
@@ -158,7 +187,9 @@ export async function flashMicroPython(
       calculateMD5Hash: (image) => SparkMD5.ArrayBuffer.hash(new Uint8Array(image).buffer),
       reportProgress: (_file, written, total) => progress(Math.round((written / total) * 100)),
     });
-    await loader.after('hard_reset');
+    // The 0.7.0 hard_reset implementation only releases RTS. Explicitly pulse EN
+    // with GPIO0 released so the newly flashed application actually starts.
+    await loader.after('custom_reset', false, 'D0|R1|W150|R0');
   } finally {
     await transport.disconnect();
   }

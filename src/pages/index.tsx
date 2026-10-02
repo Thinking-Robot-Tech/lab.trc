@@ -35,6 +35,7 @@ import {
 import { BoardId, boards, isBoard, ThemeId } from '@/lib/boards';
 import type { WorkspaceState } from '@/lib/blocks';
 import { BoardSerial, delay, flashMicroPython } from '@/lib/serial';
+import { loadFirmware } from '@/lib/firmware';
 import { downloadFile, parseProject, Project } from '@/lib/project';
 import { BridgePort, bridgeRequest } from '@/lib/bridge';
 import { BoardDrawing, QuickGuide } from '@/components/Guide';
@@ -99,7 +100,6 @@ export default function Home() {
   const [bridgePorts, setBridgePorts] = useState<BridgePort[]>([]);
   const [bridgePort, setBridgePort] = useState('');
   const [oldNano, setOldNano] = useState(false);
-  const [firmwareFile, setFirmwareFile] = useState<File | null>(null);
   const [eraseConfirmed, setEraseConfirmed] = useState(false);
   const [progress, setProgress] = useState(0);
   const [saved, setSaved] = useState(true);
@@ -109,6 +109,7 @@ export default function Home() {
   const workspace = useRef<Blockly.WorkspaceSvg | null>(null);
   const serial = useRef<BoardSerial | null>(null);
   const selectedPort = useRef<SerialPort | null>(null);
+  const flashedPorts = useRef(new WeakSet<SerialPort>());
   const importInput = useRef<HTMLInputElement>(null);
   const monitor = useRef<HTMLPreElement>(null);
   const pollErrors = useRef(0);
@@ -297,7 +298,6 @@ export default function Home() {
       selectedPort.current = null;
       setPortIndex('');
       setBridgePort('');
-      setFirmwareFile(null);
       setEraseConfirmed(false);
     });
   const choosePort = () =>
@@ -329,10 +329,14 @@ export default function Home() {
           } else {
             await session.close();
             serial.current = null;
-            setConnection('firmware');
+            const alreadyFlashed = flashedPorts.current.has(port);
+            setConnection(alreadyFlashed ? 'offline' : 'firmware');
             setEraseConfirmed(false);
-            setModal('firmware');
-            append('\nMicroPython was not detected. Check your board or install firmware.\n');
+            setModal(alreadyFlashed ? 'connect' : 'firmware');
+            const message =
+              'The Python console did not answer. Release BOOT, press RESET, close other serial apps, and reconnect.';
+            append(`\n${message}\n`);
+            if (alreadyFlashed) notify('Firmware was already written and verified. ' + message);
           }
         } else {
           if (!bridgePort) throw new Error('Refresh ports and choose your Arduino first.');
@@ -409,23 +413,39 @@ export default function Home() {
       if (!eraseConfirmed)
         throw new Error('Confirm that installing firmware will erase this board.');
       if (!selectedPort.current) throw new Error('Choose your board’s USB port first.');
-      let bytes: Uint8Array;
-      if (firmwareFile) bytes = new Uint8Array(await firmwareFile.arrayBuffer());
-      else {
-        const response = await fetch('/assets/firmware/esp32-micropython.bin');
-        if (!response.ok)
-          throw new Error(
-            'Firmware not bundled yet. Download ESP32_GENERIC .bin from the official link and choose it here.',
-          );
-        bytes = new Uint8Array(await response.arrayBuffer());
-      }
+      const port = selectedPort.current;
+      const bytes = await loadFirmware();
       setProgress(0);
-      await flashMicroPython(selectedPort.current, bytes, append, setProgress);
+      await flashMicroPython(port, bytes, append, setProgress);
+      flashedPorts.current.add(port);
       await delay(1200);
-      setConnection('offline');
-      setModal('connect');
       setEraseConfirmed(false);
-      notify('Firmware installed. Connect again to check MicroPython.');
+      setBusy('Checking MicroPython');
+      setConnection('checking');
+      const session = new BoardSerial(port, append, () => {
+        setConnection('offline');
+        setRunning(false);
+      });
+      serial.current = session;
+      try {
+        await session.open();
+        if (!(await session.probe()))
+          throw new Error(
+            'The Python console did not answer. Release BOOT, press RESET and reconnect.',
+          );
+        setConnection('ready');
+        setModal(null);
+        append('\nFirmware installed and MicroPython confirmed. Your board is ready!\n');
+        notify('MicroPython is ready. Try Run or Upload!');
+      } catch (error) {
+        await session.close();
+        serial.current = null;
+        setConnection('offline');
+        setModal('connect');
+        notify(
+          `Firmware was written and verified; you do not need to install it again. ${error instanceof Error ? error.message : error}`,
+        );
+      }
     });
   const project = (): Project => ({ version: 1, name, board, workspace: state! });
   const fileBase = name.replace(/[^a-zA-Z0-9_-]/g, '-') || 'my-project';
@@ -1029,33 +1049,20 @@ export default function Home() {
                   </span>
                   <h2 id="modal-title">Give your ESP32 its superpower.</h2>
                   <p>
-                    We couldn’t confirm MicroPython. If it’s already installed, press RESET and
-                    reconnect. Otherwise install the official firmware below.
+                    We couldn’t reach the Python console. If you already installed MicroPython,
+                    release BOOT, press RESET and reconnect first. A missing reply doesn’t mean your
+                    firmware is missing.
                   </p>
                   <div className="callout">
                     For classic ESP32 / WROOM only. ESP32-S2, S3, C3 and C6 are not supported in v1.
                   </div>
-                  <a
-                    className="secondary wide"
-                    href="https://micropython.org/download/ESP32_GENERIC/"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <Download size={16} /> Download official ESP32_GENERIC .bin
-                  </a>
-                  <label className="field-label">
-                    Firmware image (optional if bundled)
-                    <input
-                      type="file"
-                      accept=".bin"
-                      disabled={!!busy}
-                      onChange={(e) => setFirmwareFile(e.target.files?.[0] || null)}
-                    />
-                  </label>
-                  <p className="fine-print">
-                    Bundled file: public/assets/firmware/esp32-micropython.bin. The installer checks
-                    the actual chip before writing.
-                  </p>
+                  <div className="callout">
+                    <Check size={18} />
+                    <span>
+                      MicroPython v1.29.0 is included. Install it directly—no file download or
+                      selection needed. We’ll restart and check your board afterwards.
+                    </span>
+                  </div>
                   <label className="check-label erase-warning">
                     <input
                       type="checkbox"

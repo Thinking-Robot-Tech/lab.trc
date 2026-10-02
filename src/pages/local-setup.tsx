@@ -26,23 +26,18 @@ export default function Setup() {
             Choose ESP32, click Connect board, choose your USB port, then Connect &amp; check board.
           </li>
           <li>
-            If MicroPython is missing, download the full{' '}
-            <a
-              href="https://micropython.org/download/ESP32_GENERIC/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              official ESP32_GENERIC .bin
-            </a>{' '}
-            and choose it in the installer. The bundled firmware is available automatically.
+            MicroPython v1.29.0 is included. If setup is needed, click Install MicroPython—there is
+            no firmware download or file selection. A missing console reply can also mean the board
+            is still booting or BOOT is held; try RESET and reconnecting first.
           </li>
           <li>
             Installing firmware erases the board’s files. Confirm this in the installer. Hold BOOT
             while connecting if needed, then release when writing begins.
           </li>
           <li>
-            Connect again. Run tries your blocks in memory; Upload writes <code>main.py</code> and
-            restarts the board. Stop interrupts the running program.
+            After installation, Labs restarts the board and confirms MicroPython automatically. Run
+            tries your blocks in memory; Upload writes <code>main.py</code> and restarts the board.
+            Stop interrupts the running program.
           </li>
         </ol>
         <p>

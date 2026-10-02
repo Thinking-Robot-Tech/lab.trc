@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "test:browser": "node scripts/browser-check.cjs",
-    "test:compile": "tsx scripts/compile-check.ts"
+    "test:compile": "tsx scripts/compile-check.ts",
+    "test:firmware-browser": "node scripts/firmware-browser-check.cjs"
   },
   "dependencies": {
     "blockly": "^13.3.0",
