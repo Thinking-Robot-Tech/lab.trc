@@ -21,6 +21,31 @@ const { chromium } = require(process.env.PLAYWRIGHT_PATH || 'playwright');
     .getByLabel('Generated code', { exact: true })
     .getByText('while True:', { exact: true })
     .waitFor();
+  assert(
+    await page.evaluate(
+      () =>
+        document.documentElement.scrollHeight <= innerHeight &&
+        document.documentElement.scrollWidth <= innerWidth,
+    ),
+    'Desktop editor must fit the viewport',
+  );
+  await page.locator('.blocklyToolboxCategory').filter({ hasText: 'Light & pins' }).click();
+  await page.waitForTimeout(150);
+  assert(
+    await page.locator('.blockly-host').evaluate((el) => el.classList.contains('flyout-open')),
+  );
+  await page.locator('.blocklyToolboxCategory').filter({ hasText: 'Light & pins' }).click();
+  await page.waitForTimeout(150);
+  assert.equal(
+    await page.locator('.blockly-host').evaluate((el) => el.classList.contains('flyout-open')),
+    false,
+  );
+  assert(
+    await page
+      .locator('.blocklyFlyoutScrollbar')
+      .evaluateAll((els) => els.every((el) => getComputedStyle(el).display === 'none')),
+    'Closed category must hide its scrollbar',
+  );
   await page.screenshot({ path: 'test-results/studio-daylight.png', fullPage: true });
   assert.equal(
     await page.getByRole('button', { name: 'Upload to board', exact: true }).isDisabled(),
@@ -67,7 +92,8 @@ const { chromium } = require(process.env.PLAYWRIGHT_PATH || 'playwright');
   assert.equal(await page.getByLabel('Board model').inputValue(), 'uno');
   assert.equal(await page.getByLabel('Color theme').inputValue(), 'candy');
   page.on('dialog', (dialog) => dialog.accept());
-  await page.getByRole('button', { name: /SAY HELLO/ }).click();
+  await page.getByRole('button', { name: 'Projects', exact: true }).click();
+  await page.getByRole('button', { name: /Hello, robot!/ }).click();
   await page
     .getByLabel('Generated code', { exact: true })
     .getByText('Serial.println("Hello, Thinking Robot!");', { exact: true })
@@ -77,16 +103,37 @@ const { chromium } = require(process.env.PLAYWRIGHT_PATH || 'playwright');
     .getByLabel('Generated code', { exact: true })
     .getByText('print("Hello, Thinking Robot!")', { exact: true })
     .waitFor();
-  await page.getByRole('button', { name: /FIRST STEPS/ }).click();
+  await page.getByRole('button', { name: 'Projects', exact: true }).click();
+  await page.getByRole('button', { name: /Make it blink/ }).click();
   await page.getByLabel('Color theme').selectOption('daylight');
   await page
     .getByLabel('Generated code', { exact: true })
     .getByText('while True:', { exact: true })
     .waitFor();
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.getByRole('button', { name: 'Quick guide', exact: true }).click();
+  assert(
+    await page.evaluate(
+      () =>
+        document.documentElement.scrollHeight <= innerHeight &&
+        document.documentElement.scrollWidth <= innerWidth,
+    ),
+    'Laptop editor must fit the viewport',
+  );
+  const canvas = await page.locator('.editor-wrap').boundingBox();
+  assert(
+    canvas.width > 1000 && canvas.height > 550,
+    'Laptop canvas must use most of the available screen',
+  );
+  await page.getByRole('button', { name: 'Live code', exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: 'test-results/studio-mobile.png', fullPage: true });
   assert(
-    await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth <= window.innerWidth &&
+        document.documentElement.scrollHeight <= window.innerHeight,
+    ),
     'Mobile layout must not overflow',
   );
   await page.goto('http://127.0.0.1:3000/local-setup', { waitUntil: 'networkidle' });

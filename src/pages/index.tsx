@@ -8,7 +8,6 @@ import {
   ArrowRight,
   BookOpen,
   Check,
-  ChevronRight,
   CircuitBoard,
   Code2,
   Copy,
@@ -38,7 +37,7 @@ import { BoardSerial, delay, flashMicroPython } from '@/lib/serial';
 import { loadFirmware } from '@/lib/firmware';
 import { downloadFile, parseProject, Project } from '@/lib/project';
 import { BridgePort, bridgeRequest } from '@/lib/bridge';
-import { BoardDrawing, QuickGuide } from '@/components/Guide';
+import { QuickGuide } from '@/components/Guide';
 
 const Editor = dynamic(() => import('@/components/BlockEditor'), {
   ssr: false,
@@ -506,60 +505,7 @@ export default function Home() {
               {saved ? 'Saved on this device' : 'Saving…'}
             </span>
           </div>
-          <nav className="top-actions">
-            <button onClick={() => setModal('projects')}>
-              <FolderOpen size={17} />
-              <span>Projects</span>
-            </button>
-            <button onClick={() => setModal('help')}>
-              <HelpCircle size={17} />
-              <span>Help</span>
-            </button>
-            <label className="theme-picker">
-              <Sun size={16} />
-              <select
-                aria-label="Color theme"
-                value={theme}
-                onChange={(e) => setTheme(e.target.value as ThemeId)}
-              >
-                <option value="daylight">Daylight</option>
-                <option value="midnight">Midnight</option>
-                <option value="candy">Candy</option>
-              </select>
-            </label>
-            <span className="avatar">M</span>
-          </nav>
-        </header>
-        <div className="intro-bar">
-          <div>
-            <span className="eyebrow">
-              <Sparkles size={13} /> SMALL BLOCKS. BIG IDEAS.
-            </span>
-            <h1>
-              Let’s make something <span>amazing.</span>
-            </h1>
-          </div>
-          <div className="steps">
-            <span className="step active">
-              <b>1</b> Build
-            </span>
-            <ChevronRight size={15} />
-            <span className="step">
-              <b>2</b> Connect
-            </span>
-            <ChevronRight size={15} />
-            <span className="step">
-              <b>3</b> Bring it to life
-            </span>
-          </div>
-        </div>
-        <main className="studio-main">
-          <aside className="maker-sidebar">
-            <div className="sidebar-heading">
-              <CircuitBoard size={17} />
-              <h2>Your board</h2>
-              <span className="small-tag">USB</span>
-            </div>
+          <div className="board-controls">
             <select
               className="board-select"
               aria-label="Board model"
@@ -575,10 +521,6 @@ export default function Home() {
                 </option>
               ))}
             </select>
-            <div className="board-preview">
-              <BoardDrawing board={board} />
-              <span className="board-caption">{boardInfo.description}</span>
-            </div>
             <div className={`connection-status ${connection === 'ready' ? 'connected' : ''}`}>
               <span className={`status-dot ${connection === 'ready' ? 'green' : ''}`} />
               {connection === 'ready'
@@ -602,42 +544,31 @@ export default function Home() {
               {connection === 'ready' ? 'Disconnect board' : 'Connect board'}
               <ArrowRight size={16} />
             </button>
-            <p className="side-note">
-              Plug in your board with a USB data cable. We’ll help with the rest.
-            </p>
-            <div className="sidebar-rule" />
-            <div className="sidebar-heading">
-              <BookOpen size={17} />
-              <h2>A little inspiration</h2>
-            </div>
-            <p className="sidebar-subtitle">Big ideas start with a small project.</p>
-            <div className="example-list">
-              {examples.map((e) => (
-                <button className="example-card" key={e.id} onClick={() => void loadExample(e.id)}>
-                  <span className={`example-icon ${e.color}`}>
-                    <e.icon size={20} />
-                  </span>
-                  <span>
-                    <small>{e.level}</small>
-                    <strong>{e.name}</strong>
-                    <span>{e.description}</span>
-                  </span>
-                  <ChevronRight size={14} />
-                </button>
-              ))}
-            </div>
-            <div className="maker-tip">
-              <Sparkles size={17} />
-              <strong>You’re the inventor.</strong>
-              <p>Try changing the wait time. Can you make your LED blink faster?</p>
-              <button onClick={() => setPanel('guide')}>
-                Show me how <ArrowRight size={14} />
-              </button>
-            </div>
-            <a className="setup-link" href="/local-setup" target="_blank" rel="noreferrer">
-              <Usb size={14} /> Local helper & setup guide
-            </a>
-          </aside>
+          </div>
+          <nav className="top-actions">
+            <button onClick={() => setModal('projects')}>
+              <FolderOpen size={17} />
+              <span>Projects</span>
+            </button>
+            <button onClick={() => setModal('help')}>
+              <HelpCircle size={17} />
+              <span>Help</span>
+            </button>
+            <label className="theme-picker">
+              <Sun size={16} />
+              <select
+                aria-label="Color theme"
+                value={theme}
+                onChange={(e) => setTheme(e.target.value as ThemeId)}
+              >
+                <option value="daylight">Daylight</option>
+                <option value="midnight">Midnight</option>
+                <option value="candy">Candy</option>
+              </select>
+            </label>
+          </nav>
+        </header>
+        <main className="studio-main">
           <section className="workspace-card">
             <div className="workspace-toolbar">
               <div className="workspace-label">
@@ -669,12 +600,42 @@ export default function Home() {
                   <Trash2 size={17} />
                 </button>
               </div>
+              <div className="board-program-actions">
+                <button
+                  disabled={
+                    !!busy || connection !== 'ready' || board !== 'esp32' || !!errors.length
+                  }
+                  title={
+                    board !== 'esp32'
+                      ? 'Use Upload to run an Arduino sketch'
+                      : 'Run once in board memory'
+                  }
+                  className="run-button"
+                  onClick={run}
+                >
+                  <Play size={14} fill="currentColor" /> Run
+                </button>
+                <button
+                  className="primary upload-button"
+                  disabled={!!busy || connection !== 'ready' || !!errors.length}
+                  onClick={upload}
+                >
+                  {busy ? (
+                    <LoaderCircle className="spin" size={16} />
+                  ) : (
+                    <ArrowDownToLine size={16} />
+                  )}{' '}
+                  {busy || 'Upload to board'}
+                </button>{' '}
+              </div>
             </div>
             <div className="workspace-hint">
               <span>
                 <Plus size={13} /> Pick a category. Drag a block. Snap it in.
               </span>
-              <span>Little steps, real code.</span>
+              <a href="/local-setup" target="_blank" rel="noreferrer">
+                USB setup guide
+              </a>
             </div>
             <div className="editor-wrap">
               {loaded ? (
@@ -697,26 +658,6 @@ export default function Home() {
                 <span className={`status-dot ${errors.length ? 'orange' : 'green'}`} />
                 {errors.length ? errors[0] : 'Looking good! Your blocks are ready.'}
               </span>
-              <button
-                disabled={!!busy || connection !== 'ready' || board !== 'esp32' || !!errors.length}
-                title={
-                  board !== 'esp32'
-                    ? 'Use Upload to run an Arduino sketch'
-                    : 'Run once in board memory'
-                }
-                className="run-button"
-                onClick={run}
-              >
-                <Play size={14} fill="currentColor" /> Run
-              </button>
-              <button
-                className="primary upload-button"
-                disabled={!!busy || connection !== 'ready' || !!errors.length}
-                onClick={upload}
-              >
-                {busy ? <LoaderCircle className="spin" size={16} /> : <ArrowDownToLine size={16} />}{' '}
-                {busy || 'Upload to board'}
-              </button>
             </div>
           </section>
           <aside className="inspector">
@@ -861,17 +802,9 @@ export default function Home() {
         </main>
         <footer className="bottom-bar">
           <span>
-            <span className="brand-mini">
-              <CircuitBoard size={14} />
-            </span>{' '}
-            A playground for curious minds.
+            <CircuitBoard size={12} /> {boardInfo.description}
           </span>
-          <span>
-            Made to tinker. Built to learn. <span className="footer-dot">✦</span>
-          </span>
-          <span>
-            <span className="status-dot green" /> Local-first · your projects stay with you
-          </span>
+          <span>Local-first · saved on this device</span>
         </footer>
         {notice ? (
           <div className="toast" role="status">

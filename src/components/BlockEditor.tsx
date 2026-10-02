@@ -48,6 +48,7 @@ export default function BlockEditor({ board, theme, state, onChange, onReady }: 
         insertionMarkerOpacity: 0.4,
       },
     });
+    Blockly.Scrollbar.scrollbarThickness = 6;
     const ws = Blockly.inject(host.current!, {
       toolbox,
       media: '/blockly/media/',
@@ -57,7 +58,7 @@ export default function BlockEditor({ board, theme, state, onChange, onReady }: 
       zoom: {
         controls: true,
         wheel: true,
-        startScale: 0.9,
+        startScale: 0.78,
         maxScale: 1.6,
         minScale: 0.45,
         scaleSpeed: 1.1,
@@ -81,19 +82,29 @@ export default function BlockEditor({ board, theme, state, onChange, onReady }: 
         result.count,
       );
     };
+    const syncFlyout = () => {
+      const flyout = ws.getFlyout();
+      host.current?.classList.toggle('flyout-open', !!flyout?.isVisible());
+      flyout?.getWorkspace().scrollbar?.setContainerVisible(!!flyout.isVisible());
+    };
+    let flyoutFrame = 0;
     const listener = (event: Blockly.Events.Abstract) => {
       if (!event.isUiEvent) report();
+      cancelAnimationFrame(flyoutFrame);
+      flyoutFrame = requestAnimationFrame(syncFlyout);
     };
     ws.addChangeListener(listener);
     report();
+    syncFlyout();
     ready.current(ws);
     const observer = new ResizeObserver(() => {
       Blockly.svgResize(ws);
-      if (host.current && host.current.clientWidth < 500) ws.zoomToFit();
+      syncFlyout();
     });
     observer.observe(host.current!);
     return () => {
       observer.disconnect();
+      cancelAnimationFrame(flyoutFrame);
       ws.removeChangeListener(listener);
       ready.current(null);
       ws.dispose();

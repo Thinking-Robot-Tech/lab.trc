@@ -1182,300 +1182,447 @@ progress {
   text-decoration: none;
   font-size: 13px;
 }
-@media (min-width: 1600px) {
-  .studio-main {
-    grid-template-columns: 255px minmax(400px, 1fr) 370px;
-    min-height: calc(100vh - 237px);
-  }
-  .editor-wrap {
-    min-height: 550px;
-  }
-  .code-scroll {
-    max-height: calc(100vh - 515px);
-  }
-  .maker-sidebar {
-    padding: 23px 20px;
-  }
-  .board-art {
-    height: 164px;
-  }
-  .example-card {
-    padding: 15px 10px;
-  }
-  .code-scroll pre {
-    font-size: 12px;
-  }
-  .code-line {
-    min-height: 23px;
-  }
+
+/* The studio is an editor viewport; scrolling belongs to its individual panels. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #a6afbe transparent;
 }
-@media (max-width: 1200px) {
-  .studio-main {
-    grid-template-columns: 205px minmax(320px, 1fr) 285px;
-    gap: 12px;
-    padding: 0 20px 20px;
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #a6afbe;
+  border-radius: 8px;
+}
+.studio {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  font-size: 12px;
+}
+.topbar {
+  height: 58px;
+  flex: 0 0 auto;
+  padding: 0 12px;
+  gap: 14px;
+}
+.brand {
+  font-size: 15px;
+  gap: 9px;
+  flex-shrink: 0;
+}
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+}
+.brand-sub {
+  font-size: 9px;
+  letter-spacing: 3px;
+  margin-top: 2px;
+}
+.top-divider {
+  height: 28px;
+  margin: 0;
+}
+.project-title {
+  min-width: 100px;
+  width: 155px;
+  flex: 0 1 155px;
+}
+.project-title input {
+  width: 100%;
+  font-size: 12px;
+}
+.project-title > span {
+  font-size: 9px;
+  margin-top: 3px;
+}
+.board-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  min-width: 0;
+}
+.board-select {
+  width: 145px;
+  height: 32px;
+  padding: 0 8px;
+  font-size: 11px;
+  margin: 0;
+}
+.connection-status {
+  margin: 0;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.connect-button {
+  width: auto;
+  margin: 0;
+  padding: 8px 10px;
+  font-size: 11px;
+  gap: 6px;
+  white-space: nowrap;
+}
+.connect-button > svg:last-child {
+  display: none;
+}
+.top-actions {
+  margin-left: 0;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.top-actions > button {
+  gap: 5px;
+  font-size: 11px;
+  padding: 6px 4px;
+}
+.theme-picker {
+  padding: 6px;
+  gap: 4px;
+}
+.theme-picker select {
+  font-size: 10px;
+  max-width: 80px;
+}
+.studio-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  flex: 1;
+  min-height: 0;
+  gap: 8px;
+  padding: 8px;
+  margin: 0;
+  overflow: hidden;
+}
+.workspace-card,
+.code-card {
+  min-height: 0;
+  border-radius: 9px;
+}
+.workspace-toolbar {
+  height: 42px;
+  min-height: 42px;
+  padding: 0 10px;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.workspace-label {
+  gap: 6px;
+  white-space: nowrap;
+}
+.workspace-label strong {
+  font-size: 11px;
+}
+.workspace-actions {
+  margin-left: auto;
+  gap: 8px;
+}
+.workspace-actions button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 28px;
+}
+.board-program-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.run-button,
+.upload-button {
+  padding: 7px 9px;
+  font-size: 10px;
+  height: 30px;
+}
+.workspace-hint {
+  padding: 5px 10px;
+  font-size: 9px;
+  flex-shrink: 0;
+}
+.workspace-hint a {
+  color: var(--accent);
+}
+.editor-wrap {
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+}
+.workspace-footer {
+  min-height: 25px;
+  height: 25px;
+  padding: 3px 10px;
+  flex-shrink: 0;
+}
+.workspace-footer > span {
+  max-width: none;
+  font-size: 9px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.inspector {
+  min-height: 0;
+  overflow: hidden;
+  gap: 8px;
+}
+.code-card {
+  flex: 1;
+  min-height: 0;
+}
+.inspector-tabs {
+  height: 42px;
+  min-height: 42px;
+  padding: 0 12px;
+  gap: 16px;
+}
+.code-header {
+  padding: 8px 12px;
+  flex-shrink: 0;
+}
+.code-scroll {
+  min-height: 0;
+  max-height: none;
+  overscroll-behavior: contain;
+}
+.code-scroll pre {
+  font-size: 11px;
+  line-height: 1.75;
+}
+.code-note {
+  padding: 7px 10px;
+  font-size: 9px;
+  flex-shrink: 0;
+}
+.quick-guide {
+  flex: 1;
+  min-height: 0;
+  padding: 14px 12px;
+  overscroll-behavior: contain;
+}
+.monitor-card {
+  height: clamp(160px, 27vh, 260px);
+  flex: 0 0 auto;
+  min-height: 0;
+  border-radius: 9px;
+}
+.monitor-header {
+  padding: 9px 10px;
+  flex-shrink: 0;
+}
+.monitor-output {
+  padding: 10px;
+  font-size: 11px;
+  overscroll-behavior: contain;
+}
+.monitor-input {
+  padding: 8px 10px;
+  flex-shrink: 0;
+}
+.monitor-input input {
+  min-width: 0;
+  font-size: 10px;
+}
+.bottom-bar {
+  height: 24px;
+  flex: 0 0 auto;
+  padding: 0 12px;
+  font-size: 9px;
+}
+.blocklyToolbox {
+  padding: 8px 0 !important;
+  overscroll-behavior: contain;
+}
+.blocklyToolboxCategory {
+  height: 33px !important;
+  padding: 0 5px !important;
+  margin: 2px 0 !important;
+}
+.blocklyTreeRow,
+.blocklyToolboxCategoryContainer {
+  min-height: 30px !important;
+  padding: 6px 8px !important;
+}
+.blocklyToolboxCategoryLabel {
+  font-size: 10px !important;
+}
+.blocklyScrollbarBackground {
+  fill: transparent !important;
+}
+.blocklyScrollbarHandle {
+  rx: 3px;
+  ry: 3px;
+}
+.blockly-host:not(.flyout-open) .blocklyFlyoutScrollbar {
+  display: none !important;
+}
+@media (max-width: 1150px) {
+  .brand {
+    font-size: 13px;
   }
   .topbar {
-    padding: 0 20px;
-    gap: 18px;
+    gap: 8px;
   }
-  .intro-bar {
-    padding: 23px 20px;
+  .project-title {
+    width: 120px;
+    flex-basis: 120px;
   }
-  .maker-sidebar {
-    padding: 17px 12px;
-  }
-  .example-card {
-    gap: 7px;
-    padding: 10px 6px;
-  }
-  .example-card > span > span {
-    font-size: 7px;
-  }
-  .workspace-hint > span:last-child {
+  .connection-status {
     display: none;
-  }
-  .workspace-label > .small-tag {
-    display: none;
-  }
-  .workspace-footer {
-    flex-wrap: wrap;
-  }
-  .workspace-footer > span {
-    flex-basis: 100%;
-    max-width: none;
-  }
-  .workspace-footer > .run-button {
-    margin-left: auto;
-  }
-  .top-actions {
-    gap: 16px;
-  }
-  .code-scroll pre {
-    font-size: 9px;
-  }
-  .brand {
-    min-width: 185px;
-  }
-  .bottom-bar {
-    padding: 15px 20px;
-  }
-}
-@media (max-width: 1000px) {
-  .studio-main {
-    grid-template-columns: 190px minmax(400px, 1fr);
-  }
-  .inspector {
-    grid-column: 1/-1;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-  .code-card {
-    min-height: 280px;
-  }
-  .code-scroll {
-    max-height: 270px;
-  }
-  .monitor-card {
-    height: 100%;
-    min-height: 280px;
-  }
-  .steps {
-    gap: 9px;
-  }
-  .step {
-    font-size: 9px;
-  }
-  .top-actions > button span {
-    display: none;
-  }
-  .top-actions {
-    gap: 15px;
-  }
-  .maker-tip {
-    margin-top: 15px;
   }
   .studio-main {
-    min-height: 0;
-  }
-  .bottom-bar > span:nth-child(2) {
-    display: none;
+    grid-template-columns: minmax(0, 1fr) 270px;
   }
 }
-@media (max-width: 680px) {
+@media (max-width: 850px) {
   .topbar {
-    height: auto;
-    min-height: 70px;
-    padding: 14px 16px;
-    gap: 12px;
+    height: 96px;
     flex-wrap: wrap;
-  }
-  .brand {
-    font-size: 16px;
-    min-width: 0;
-  }
-  .brand-mark {
-    width: 35px;
-    height: 35px;
+    justify-content: space-between;
+    align-content: center;
+    row-gap: 7px;
   }
   .top-divider {
     display: none;
   }
-  .project-title {
-    order: 3;
+  .board-controls {
+    order: 4;
     width: 100%;
-    padding-top: 10px;
-    border-top: 1px solid var(--border);
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .top-actions {
-    gap: 12px;
-  }
-  .theme-picker {
-    padding: 7px;
-    gap: 4px;
-  }
-  .theme-picker select {
-    width: 69px;
-    font-size: 10px;
-  }
-  .avatar {
-    display: none;
-  }
-  .intro-bar {
-    padding: 22px 16px;
-    display: block;
-  }
-  h1 {
-    font-size: 23px;
-  }
-  .steps {
-    margin-top: 18px;
-    gap: 12px;
-  }
-  .studio-main {
-    display: flex;
-    flex-direction: column;
-    padding: 0 12px 20px;
-  }
-  .maker-sidebar {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-  .sidebar-heading {
-    grid-column: 1;
-  }
-  .board-select {
     margin: 0;
-    grid-column: 1;
-    grid-row: 2;
-  }
-  .board-preview {
-    grid-column: 2;
-    grid-row: 1/4;
-  }
-  .board-art {
-    height: 110px;
-    max-width: 185px;
-    margin: 0;
-  }
-  .board-caption {
-    font-size: 8px;
   }
   .connection-status {
-    grid-column: 1;
-    grid-row: 3;
-    margin-top: 0;
-    justify-content: flex-start;
+    display: flex;
+    margin-left: auto;
   }
-  .connect-button {
-    grid-column: 1/-1;
-    margin: 0;
+  .top-actions {
+    margin-left: auto;
   }
-  .side-note {
-    grid-column: 1/-1;
-    padding: 0;
-  }
-  .maker-sidebar > .sidebar-rule,
-  .maker-sidebar > .sidebar-heading:not(:first-child),
-  .maker-sidebar > .sidebar-rule + .sidebar-heading,
-  .maker-sidebar > .sidebar-heading:nth-of-type(3),
-  .sidebar-subtitle,
-  .example-list,
-  .maker-tip {
+  .top-actions > button span {
     display: none;
   }
-  .setup-link {
-    grid-column: 1/-1;
-    padding: 0;
-    margin: 0;
+  .studio-main {
+    grid-template-columns: minmax(0, 1fr) 240px;
   }
-  .workspace-card {
-    min-height: 560px;
+  .workspace-label .small-tag {
+    display: none;
   }
-  .editor-wrap {
-    min-height: 410px;
+}
+@media (max-width: 650px) {
+  .brand > span:last-child {
+    display: none;
   }
-  .workspace-footer {
-    flex-wrap: wrap;
-  }
-  .workspace-toolbar {
-    padding: 0 12px;
-  }
-  .workspace-actions {
-    gap: 8px;
-  }
-  .workspace-hint {
-    padding: 10px 12px;
+  .studio-main {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) 210px;
+    gap: 5px;
+    padding: 5px;
   }
   .inspector {
-    display: flex;
-  }
-  .code-card {
-    min-height: 300px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 5px;
   }
   .monitor-card {
-    height: 240px;
-    min-height: 240px;
+    height: 100%;
   }
-  .bottom-bar {
-    flex-wrap: wrap;
-    padding: 14px 16px;
+  .inspector-tabs {
+    gap: 8px;
+    padding: 0 8px;
+    height: 34px;
+    min-height: 34px;
+  }
+  .inspector-tabs button {
+    font-size: 9px;
+    gap: 3px;
+  }
+  .inspector-tabs svg {
+    width: 12px;
+  }
+  .code-note {
+    display: none;
+  }
+  .project-title {
+    width: 110px;
+    flex-basis: 110px;
+  }
+  .brand {
+    font-size: 11px;
+    gap: 5px;
+  }
+  .brand-mark {
+    width: 26px;
+    height: 26px;
+  }
+  .brand-mark svg {
+    width: 19px;
+  }
+  .top-actions {
+    gap: 3px;
+  }
+  .theme-picker > svg {
+    display: none;
+  }
+  .theme-picker select {
+    max-width: 65px;
+  }
+  .board-select {
+    width: 128px;
+  }
+  .connection-status {
     font-size: 8px;
   }
-  .toast {
-    max-width: calc(100vw - 30px);
-    font-size: 12px;
-    width: calc(100vw - 30px);
+  .connect-button {
+    font-size: 10px;
   }
-  .modal {
-    padding: 25px 20px;
+  .workspace-toolbar {
+    padding: 0 6px;
+    gap: 4px;
   }
-  .modal h2 {
-    font-size: 22px;
+  .workspace-label strong {
+    font-size: 10px;
   }
-  .modal-backdrop {
-    padding: 15px;
+  .workspace-actions {
+    gap: 1px;
   }
-  .code-scroll pre {
-    font-size: 11px;
+  .workspace-actions button {
+    width: 21px;
+  }
+  .board-program-actions {
+    gap: 3px;
+  }
+  .run-button,
+  .upload-button {
+    padding: 5px;
+    font-size: 9px;
+  }
+  .upload-button svg {
+    display: none;
+  }
+  .workspace-hint > a {
+    display: none;
+  }
+  .bottom-bar {
+    height: 20px;
+    padding: 0 6px;
+    font-size: 8px;
+  }
+  .bottom-bar > span:first-child {
+    max-width: 55%;
+    overflow: hidden;
+    white-space: nowrap;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .spin {
-    animation: none;
-  }
-  * {
-    transition: none !important;
-  }
-}
-
-@media (max-width: 680px) {
-  .blocklyZoom,
-  .blocklyTrash {
-    display: none;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }
